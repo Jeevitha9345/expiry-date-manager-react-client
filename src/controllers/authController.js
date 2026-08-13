@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -5,9 +6,21 @@ const userDao = require('../dao/userDao');
 
 const ADMIN_ROLE = 'ADMIN';
 
+const checkDBConnection = (response) => {
+    if (mongoose.connection.readyState !== 1) {
+        response.status(503).json({
+            message: 'Database connection is not active. Please ensure MongoDB service is running on mongodb://127.0.0.1:27017'
+        });
+        return false;
+    }
+    return true;
+};
+
 const authController = {
     register: async (request, response) => {
         try {
+            if (!checkDBConnection(response)) return;
+
             const errors = validationResult(request);
             if (!errors.isEmpty()) {
                 return response.status(400).json({
@@ -48,13 +61,16 @@ const authController = {
         } catch (error) {
             console.error('Registration Error:', error);
             return response.status(500).json({
-                message: 'Internal server error'
+                message: 'Internal server error',
+                details: error.message
             });
         }
     },
 
     login: async (request, response) => {
         try {
+            if (!checkDBConnection(response)) return;
+
             const errors = validationResult(request);
             if (!errors.isEmpty()) {
                 return response.status(400).json({
@@ -105,7 +121,8 @@ const authController = {
         } catch (error) {
             console.error('Login Error:', error);
             return response.status(500).json({
-                message: 'Internal server error'
+                message: 'Internal server error',
+                details: error.message
             });
         }
     }

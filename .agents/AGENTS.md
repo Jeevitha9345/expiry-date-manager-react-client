@@ -1,21 +1,21 @@
-# AGENTS.md - Express Server Rules & Guidelines
+# AGENTS.md - Workspace Rules & Operating Instructions
 
-## Context Building Rule
-Always perform the Context Building phase prior to writing code:
-- Read and analyze `.agents/skills/skills.yaml` and `.agents/skills/instructions.md`.
-- Understand project structure, tech stack, and conventions.
-- Provide explicit context acknowledgment before starting implementation.
+## Context Building Mandate
+Whenever starting to work from scratch or initiating a new development phase, the AI agent **MUST** start with the **Context Building** protocol before writing code:
 
-## Mandatory Architectural Guidelines
-1. **Controller-Service-DAO Pattern**:
-   - Routes MUST only map to Controllers.
-   - Controllers handle HTTP validation (e.g. `express-validator`), parse params/body, call DAO/Services, and construct standard responses.
-   - DAOs handle Mongoose models and database operations (`User.findOne`, `Product.find`, etc.).
-2. **Authentication & Authorization**:
-   - JWT tokens stored in HTTP-only cookies (`jwtToken`).
-   - Standard roles: `ADMIN_ROLE`, user matching with `adminId`.
-   - Protect routes using `authMiddleware.protect`.
-3. **API Documentation**:
-   - Always generate Swagger models/documentation for every newly added REST API endpoint.
-4. **Approval**:
-   - Always get approval before making changes.
+1. **Skills & Instructions Audit**:
+   - Thoroughly read and analyze `.agents/skills/skills.yaml` and `.agents/skills/instructions.md`.
+   - Internalize all domain concepts, tech stack versions, architectural patterns (Controller-Service-DAO/Repository), route handlers, middleware contracts, and style rules.
+
+2. **Workspace & Environment Discovery**:
+   - Inspect existing directory structures, configuration files (`package.json`, `vite.config.js`, etc.), and environment setups across all modules (server and client).
+
+3. **Context Acknowledgment & Synthesis**:
+   - Document synthesized context in `ai/project_context.md`.
+   - Provide a concise summary and explicit acknowledgment to the user that the context and coding standards are fully understood and ready for implementation.
+
+## Workflow Rules
+- **Controller-Service-Repository (DAO) Pattern**: Enforce strict separation of concerns for Express backend code.
+- **API Swagger Documentation**: Include OpenAPI / Swagger annotations or models for every newly added REST API endpoint.
+- **Approval Before Execution**: Always obtain user approval before executing file changes or code modifications.
+- **Task Closure**: Upon completing and verifying a task, produce a walkthrough artifact documenting all changes made and test results.

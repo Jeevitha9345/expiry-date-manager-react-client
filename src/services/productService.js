@@ -1,96 +1,117 @@
-const productDao = require('../dao/productDao');
+const API_BASE_URL = 'http://localhost:5001/api/v1/products';
 
-const productService = {
-    getPaginatedProducts: async ({ userId, page = 1, limit = 20, search, expiryFilter }) => {
-        const parsedPage = Math.max(1, parseInt(page, 10) || 1);
-        const parsedLimit = Math.min(20, Math.max(1, parseInt(limit, 10) || 20));
-        const skip = (parsedPage - 1) * parsedLimit;
+export const getProducts = async ({ page = 1, limit = 20, search = '', expiryFilter = 'all' } = {}) => {
+  try {
+    const params = new URLSearchParams();
+    if (page) params.append('page', page);
+    if (limit) params.append('limit', limit);
+    if (search && search.trim()) params.append('search', search.trim());
+    if (expiryFilter) params.append('expiryFilter', expiryFilter);
 
-        const query = { userId };
+    const response = await fetch(`${API_BASE_URL}?${params.toString()}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
 
-        // Expiry Date Range Filter
-        const now = new Date();
-        if (expiryFilter === '1month') {
-            const nextMonth = new Date();
-            nextMonth.setDate(nextMonth.getDate() + 30);
-            query.expiryDate = { $gte: now, $lte: nextMonth };
-        } else if (expiryFilter === '3months') {
-            const next3Months = new Date();
-            next3Months.setDate(next3Months.getDate() + 90);
-            query.expiryDate = { $gte: now, $lte: next3Months };
-        } else if (expiryFilter === 'expired') {
-            query.expiryDate = { $lt: now };
-        }
-
-        // Search by title or UPC code
-        if (search && search.trim() !== '') {
-            const regex = new RegExp(search.trim(), 'i');
-            query.$or = [
-                { title: regex },
-                { upcCode: regex }
-            ];
-        }
-
-        const [products, totalItems] = await Promise.all([
-            productDao.find(query, { expiryDate: 1 }, skip, parsedLimit),
-            productDao.count(query)
-        ]);
-
-        const totalPages = Math.ceil(totalItems / parsedLimit) || 1;
-
-        return {
-            products,
-            pagination: {
-                currentPage: parsedPage,
-                totalPages,
-                pageSize: parsedLimit,
-                totalItems,
-                hasNextPage: parsedPage < totalPages,
-                hasPrevPage: parsedPage > 1
-            }
-        };
-    },
-
-    addProduct: async (userId, productData) => {
-        return await productDao.create({
-            userId,
-            upcCode: productData.upcCode || '',
-            title: productData.title,
-            amount: productData.amount,
-            expiryDate: new Date(productData.expiryDate)
-        });
-    },
-
-    getProductById: async (productId, userId) => {
-        return await productDao.findById(productId, userId);
-    },
-
-    updateProduct: async (productId, userId, updateData) => {
-        const payload = {};
-        if (updateData.upcCode !== undefined) payload.upcCode = updateData.upcCode;
-        if (updateData.title !== undefined) payload.title = updateData.title;
-        if (updateData.amount !== undefined) payload.amount = updateData.amount;
-        if (updateData.expiryDate !== undefined) payload.expiryDate = new Date(updateData.expiryDate);
-
-        return await productDao.update(productId, userId, payload);
-    },
-
-    deleteProduct: async (productId, userId) => {
-        return await productDao.delete(productId, userId);
-    },
-
-    lookupUpc: async (upcCode, userId) => {
-        const product = await productDao.findLatestByUpc(upcCode, userId);
-        if (!product) {
-            return { upcCode, found: false };
-        }
-        return {
-            upcCode: product.upcCode,
-            title: product.title,
-            amount: product.amount,
-            found: true
-        };
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch products');
     }
+    return data;
+  } catch (error) {
+    throw error;
+  }
 };
 
-module.exports = productService;
+export const getProductById = async (id) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${id}`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch product details');
+    }
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createProduct = async (productData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(productData)
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      const errorMessage = data.message || (data.errors && data.errors.map(e => e.msg).join(', ')) || 'Failed to create product';
+      throw new Error(errorMessage);
+    }
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateProduct = async (id, productData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${id}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(productData)
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      const errorMessage = data.message || (data.errors && data.errors.map(e => e.msg).join(', ')) || 'Failed to update product';
+      throw new Error(errorMessage);
+    }
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteProduct = async (id) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to delete product');
+    }
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const lookupUpc = async (upcCode) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/lookup/${upcCode}`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || 'UPC lookup failed');
+    }
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};

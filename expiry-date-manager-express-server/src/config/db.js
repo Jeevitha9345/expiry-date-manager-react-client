@@ -2,12 +2,13 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/expiry-date-manager', {
-            serverSelectionTimeoutMS: 3000
+        const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/expiry-date-manager';
+        const conn = await mongoose.connect(mongoURI, {
+            serverSelectionTimeoutMS: 5000
         });
         console.log(`MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
-        console.error(`Database Connection Warning: ${error.message}`);
+        console.error(`Database Connection Error: ${error.message}`);
     }
 };
 

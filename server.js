@@ -7,6 +7,7 @@ const swaggerUi = require('swagger-ui-express');
 const connectDB = require('./src/config/db');
 const swaggerSpec = require('./src/config/swagger');
 const authRoutes = require('./src/routes/authRoutes');
+const productRoutes = require('./src/routes/productRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -16,7 +17,17 @@ connectDB();
 
 // Core Middlewares
 app.use(cors({
-    origin: 'http://localhost:5173', // Vite default React dev server port
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, Postman)
+        if (!origin) return callback(null, true);
+        
+        // Allow any localhost origin (e.g., http://localhost:5173, http://localhost:5174, http://127.0.0.1:5173)
+        if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+            return callback(null, true);
+        }
+        
+        return callback(null, true);
+    },
     credentials: true
 }));
 app.use(express.json());
@@ -27,6 +38,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // API Routes
 app.use('/auth', authRoutes);
+app.use('/api/v1/products', productRoutes);
+app.use('/products', productRoutes);
 
 // Health Check Endpoint
 /**

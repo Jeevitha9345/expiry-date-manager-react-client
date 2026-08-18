@@ -1,6 +1,15 @@
 const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
 const API_BASE_URL = `${rawBaseUrl.replace(/\/+$/, '')}/api/v1/products`;
 
+const getAuthHeaders = (extraHeaders = {}) => {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...extraHeaders
+  };
+};
+
 const handleNetworkError = (error) => {
   if (error.name === 'TypeError' || error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
     return new Error(`Unable to connect to backend server. If deployed, ensure VITE_API_BASE_URL environment variable is set to your live backend URL.`);
@@ -19,9 +28,7 @@ export const getProducts = async ({ page = 1, limit = 20, search = '', expiryFil
     const response = await fetch(`${API_BASE_URL}?${params.toString()}`, {
       method: 'GET',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: getAuthHeaders()
     });
 
     const data = await response.json();
@@ -38,7 +45,8 @@ export const getProductById = async (id) => {
   try {
     const response = await fetch(`${API_BASE_URL}/${id}`, {
       method: 'GET',
-      credentials: 'include'
+      credentials: 'include',
+      headers: getAuthHeaders()
     });
     const data = await response.json();
     if (!response.ok) {
@@ -55,9 +63,7 @@ export const createProduct = async (productData) => {
     const response = await fetch(`${API_BASE_URL}`, {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(productData)
     });
     const data = await response.json();
@@ -73,12 +79,10 @@ export const createProduct = async (productData) => {
 
 export const updateProduct = async (id, productData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/${id}`, {
+    const response = await fetch(`${API_BASE_URL}`, {
       method: 'PUT',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(productData)
     });
     const data = await response.json();
@@ -96,7 +100,8 @@ export const deleteProduct = async (id) => {
   try {
     const response = await fetch(`${API_BASE_URL}/${id}`, {
       method: 'DELETE',
-      credentials: 'include'
+      credentials: 'include',
+      headers: getAuthHeaders()
     });
     const data = await response.json();
     if (!response.ok) {
@@ -112,7 +117,8 @@ export const lookupUpc = async (upcCode) => {
   try {
     const response = await fetch(`${API_BASE_URL}/lookup/${upcCode}`, {
       method: 'GET',
-      credentials: 'include'
+      credentials: 'include',
+      headers: getAuthHeaders()
     });
     const data = await response.json();
     if (!response.ok) {

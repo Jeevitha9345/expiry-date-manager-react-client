@@ -1,6 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const authController = require('../controllers/authController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
@@ -75,5 +76,33 @@ router.post('/register', registerValidators, authController.register);
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/login', loginValidators, authController.login);
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout user & clear JWT cookie
+ *     tags: [Authentication]
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ */
+router.post('/logout', authController.logout);
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get current authenticated user profile
+ *     tags: [Authentication]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user profile retrieved
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/me', authMiddleware.protect, authController.getMe);
 
 module.exports = router;

@@ -1,4 +1,12 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'
+const API_BASE_URL = rawBaseUrl.replace(/\/+$/, '')
+
+const handleNetworkError = (error) => {
+  if (error.name === 'TypeError' || error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+    return new Error(`Unable to connect to backend server at ${API_BASE_URL}. If deployed, ensure VITE_API_BASE_URL environment variable is set to your live backend URL.`)
+  }
+  return error
+}
 
 export const loginUser = async ({ email, password }) => {
   try {
@@ -20,7 +28,7 @@ export const loginUser = async ({ email, password }) => {
 
     return data
   } catch (error) {
-    throw error
+    throw handleNetworkError(error)
   }
 }
 
@@ -44,7 +52,7 @@ export const registerUser = async ({ name, email, password }) => {
 
     return data
   } catch (error) {
-    throw error
+    throw handleNetworkError(error)
   }
 }
 
@@ -63,7 +71,7 @@ export const logoutUser = async () => {
 
     return data
   } catch (error) {
-    throw error
+    throw handleNetworkError(error)
   }
 }
 
@@ -84,3 +92,4 @@ export const getCurrentUser = async () => {
     return null
   }
 }
+

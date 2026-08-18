@@ -1,4 +1,12 @@
-const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}/api/v1/products`;
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+const API_BASE_URL = `${rawBaseUrl.replace(/\/+$/, '')}/api/v1/products`;
+
+const handleNetworkError = (error) => {
+  if (error.name === 'TypeError' || error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+    return new Error(`Unable to connect to backend server. If deployed, ensure VITE_API_BASE_URL environment variable is set to your live backend URL.`);
+  }
+  return error;
+};
 
 export const getProducts = async ({ page = 1, limit = 20, search = '', expiryFilter = 'all' } = {}) => {
   try {
@@ -22,7 +30,7 @@ export const getProducts = async ({ page = 1, limit = 20, search = '', expiryFil
     }
     return data;
   } catch (error) {
-    throw error;
+    throw handleNetworkError(error);
   }
 };
 
@@ -38,7 +46,7 @@ export const getProductById = async (id) => {
     }
     return data;
   } catch (error) {
-    throw error;
+    throw handleNetworkError(error);
   }
 };
 
@@ -59,7 +67,7 @@ export const createProduct = async (productData) => {
     }
     return data;
   } catch (error) {
-    throw error;
+    throw handleNetworkError(error);
   }
 };
 
@@ -80,7 +88,7 @@ export const updateProduct = async (id, productData) => {
     }
     return data;
   } catch (error) {
-    throw error;
+    throw handleNetworkError(error);
   }
 };
 
@@ -96,7 +104,7 @@ export const deleteProduct = async (id) => {
     }
     return data;
   } catch (error) {
-    throw error;
+    throw handleNetworkError(error);
   }
 };
 
@@ -112,6 +120,6 @@ export const lookupUpc = async (upcCode) => {
     }
     return data;
   } catch (error) {
-    throw error;
+    throw handleNetworkError(error);
   }
 };

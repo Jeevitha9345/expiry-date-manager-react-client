@@ -9,7 +9,7 @@ const ADMIN_ROLE = 'ADMIN';
 const checkDBConnection = (response) => {
     if (mongoose.connection.readyState !== 1) {
         response.status(503).json({
-            message: 'Database connection is not active. Please ensure MongoDB service is running on mongodb://127.0.0.1:27017'
+            message: 'Database connection is not active. Please check database server and MONGO_URI configuration.'
         });
         return false;
     }
@@ -97,12 +97,14 @@ const authController = {
                     { expiresIn: '1h' }
                 );
 
+                const isProduction = process.env.NODE_ENV === 'production';
                 response.cookie('jwtToken', token, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    domain: 'localhost',
+                    secure: isProduction,
+                    sameSite: isProduction ? 'none' : 'lax',
                     path: '/'
                 });
+
                 return response.status(200).json({
                     message: 'User authenticated',
                     user: {
@@ -129,9 +131,11 @@ const authController = {
 
     logout: async (request, response) => {
         try {
+            const isProduction = process.env.NODE_ENV === 'production';
             response.clearCookie('jwtToken', {
                 httpOnly: true,
-                domain: 'localhost',
+                secure: isProduction,
+                sameSite: isProduction ? 'none' : 'lax',
                 path: '/'
             });
             return response.status(200).json({
@@ -163,4 +167,3 @@ const authController = {
 };
 
 module.exports = authController;
-

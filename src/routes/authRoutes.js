@@ -1,6 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const authController = require('../controllers/authController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
@@ -88,8 +89,6 @@ router.post('/login', loginValidators, authController.login);
  */
 router.post('/logout', authController.logout);
 
-const authMiddleware = require('../middlewares/authMiddleware');
-
 /**
  * @swagger
  * /auth/me:
@@ -107,4 +106,3 @@ const authMiddleware = require('../middlewares/authMiddleware');
 router.get('/me', authMiddleware.protect, authController.getMe);
 
 module.exports = router;
-

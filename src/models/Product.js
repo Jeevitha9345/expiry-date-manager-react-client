@@ -33,4 +33,3 @@ productSchema.index({ userId: 1, expiryDate: 1 });
 productSchema.index({ userId: 1, upcCode: 1 });
 
 module.exports = mongoose.model('Product', productSchema);
-

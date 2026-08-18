@@ -1,4 +1,9 @@
-require('dotenv').config();
+try {
+    require('dotenv').config();
+} catch (e) {
+    // Environment variables supplied natively by deployment platform (e.g. Render)
+}
+
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');

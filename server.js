@@ -52,6 +52,22 @@ app.use('/auth', authRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/products', productRoutes);
 
+// Root Welcome Endpoint
+app.get('/', (req, res) => {
+    const baseUrl = process.env.SERVER_URL || `${req.protocol}://${req.get('host')}`;
+    res.status(200).json({
+        name: 'Expiry Date Manager REST API',
+        status: 'UP',
+        version: '1.0.0',
+        documentation: `${baseUrl}/api-docs`,
+        healthCheck: `${baseUrl}/api/health`,
+        endpoints: {
+            auth: `${baseUrl}/auth`,
+            products: `${baseUrl}/api/v1/products`
+        }
+    });
+});
+
 // Health Check Endpoint
 /**
  * @swagger
